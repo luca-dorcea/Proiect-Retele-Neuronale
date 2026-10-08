@@ -20,6 +20,6 @@
 
 **Nevoia, pe scurt (1–2 propoziții):** 
 
-**Fișa P1 (versiunea curentă):** [docs/RN_P1_Nume_Prenume.md](docs/)
+**Fișa P1 (versiunea curentă):** [docs/RN_P1_Dorcea_Luca-Cristian.md](docs/RN_P1_Dorcea_Luca-Cristian.md)
 
 <!-- RN:SECTIUNI-NOI -->
