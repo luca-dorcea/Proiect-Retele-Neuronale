@@ -22,7 +22,7 @@
 | Titlul provizoriu al proiectului | [o formulare care indică problema și contextul, nu doar tehnologia] |
 | Username GitHub | luca-dorcea |
 | Repository-ul proiectului | https://github.com/FIIR-RN2026/633ab-dorcea-luca-cristian |
-| Invitația GitHub este acceptată | [da / nu – dacă nu, motivul] |
+| Invitația GitHub este acceptată | da |
 
 ## 1. Nevoia și utilizatorul
 
