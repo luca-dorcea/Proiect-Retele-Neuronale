@@ -18,7 +18,7 @@
 
 **Titlul provizoriu al proiectului:** Recunoașterea automată a tipului și dimensiunii șuruburilor, piulițelor și șaibelor din fotografii, pentru sortarea pieselor de asamblare
 
-**Nevoia, pe scurt (1–2 propoziții):** Identificarea și numărarea manuală a pieselor de asamblare amestecate (șuruburi, piulițe, șaibe) după tip și dimensiune. Aplicația primește o fotografie luată de sus, la un post fix, și indică tipul și dimensiunea fiecărei piese și numărul de piese din fiecare clasă, pentru a sprijini sortarea și inventarierea lor.
+**Nevoia, pe scurt (1–2 propoziții):** Piesele de asamblare amestecate (șuruburi, piulițe, șaibe) trebuie identificate și numărate după tip și dimensiune. Aplicația primește o fotografie luată de sus, la un post fix, și indică tipul și dimensiunea fiecărei piese și numărul de piese din fiecare clasă, pentru a sprijini sortarea și inventarierea lor.
 
 **Fișa P1 (versiunea curentă):** [docs/RN_P1_Dorcea_Luca-Cristian.md](docs/RN_P1_Dorcea_Luca-Cristian.md)
 

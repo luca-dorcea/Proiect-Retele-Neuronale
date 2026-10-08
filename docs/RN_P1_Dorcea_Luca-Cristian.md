@@ -38,7 +38,7 @@
 
 **2.2. Costul erorilor.** [Ce este mai grav în problema voastră: o alarmă falsă sau o problemă ratată (respectiv, la estimarea unei valori, o eroare mică frecventă sau o eroare mare rară)? Argumentați pe baza consecințelor reale.]
 
-**2.3. Beneficiul urmărit.** Sortarea și numărarea pieselor devin mai rapide și mai consecvente decât identificarea vizuală. Beneficiul se verifică pe același set de fotografii de test prin: (1) acuratețea pe fiecare clasă și matricea de confuzie, comparate cu reperul automat bazat pe reguli (secțiunea 4.3); (2) timpul necesar pentru a identifica piesele dintr-o fotografie, comparat cu timpul unei identificări manuale.
+**2.3. Beneficiul urmărit.** Sortarea și numărarea pieselor devin mai rapide și mai consecvente decât prin soluția actuală (secțiunea 4.1). Beneficiul se verifică pe același set de fotografii de test prin: (1) acuratețea pe fiecare clasă și matricea de confuzie, comparate cu reperul automat bazat pe reguli (secțiunea 4.3); (2) timpul necesar pentru a identifica piesele dintr-o fotografie, comparat cu timpul necesar prin soluția actuală.
 
 ## 3. Formularea problemei
 
