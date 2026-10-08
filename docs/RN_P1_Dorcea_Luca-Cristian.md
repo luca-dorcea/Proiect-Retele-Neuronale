@@ -18,7 +18,7 @@
 |---|---|
 | Nume și prenume | Dorcea Luca-Cristian |
 | Grupa | 633AB |
-| Versiunea fișei și data | [1 – în ședința P1; 2, 3 … după feedback] · [data] |
+| Versiunea fișei și data | 1 · 08.10.2026 |
 | Titlul provizoriu al proiectului | [o formulare care indică problema și contextul, nu doar tehnologia] |
 | Username GitHub | luca-dorcea |
 | Repository-ul proiectului | https://github.com/FIIR-RN2026/633ab-dorcea-luca-cristian |
