@@ -104,7 +104,7 @@ Estimarea se bazează pe ordinele de mărime folosite uzual pentru antrenarea de
 
 ## 8. Feedback și revizuire
 
-**8.1. Recomandările primite în ședința P1.** [Notați recomandările îndrumătorului. Dacă discuția nu a avut loc, menționați acest lucru.]
+**8.1. Recomandările primite în ședința P1.**
 
 **8.2. Modificările față de versiunea anterioară.** Nu este cazul; aceasta este versiunea 1.
 
