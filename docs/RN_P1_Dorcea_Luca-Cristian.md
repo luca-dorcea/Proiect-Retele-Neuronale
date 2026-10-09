@@ -114,7 +114,7 @@ Estimarea se bazează pe ordinele de mărime folosite uzual pentru antrenarea de
 - *P1 · Propunerea de proiect* (instrucțiuni), cadrele didactice ale disciplinei Rețele neuronale, UNSTPB FIIR, 2026: structura și cerințele propunerii.
 - *Repository-ul GitHub al proiectului RN: pași de urmat*, cadrele didactice ale disciplinei Rețele neuronale, UNSTPB FIIR, 2026: accesul la repository.
 
-**9.2. Folosirea asistenților AI.** Am folosit Claude (Anthropic) pentru alegerea temei dintre mai multe variante propuse, pentru discutarea abordării tehnice (post fix cu trepied, decupare automată, rețea convoluțională proprie, reper bazat pe reguli) și pentru redactarea acestei fișe pe baza răspunsurilor mele. [Ce ați verificat sau modificat personal.]
+**9.2. Folosirea asistenților AI.** Am folosit Claude (Anthropic) pentru alegerea temei dintre mai multe variante propuse, pentru discutarea abordării tehnice (post fix cu trepied, decupare automată, rețea convoluțională proprie, reper bazat pe reguli) și pentru redactarea acestei fișe pe baza răspunsurilor mele.
 
 ---
 
