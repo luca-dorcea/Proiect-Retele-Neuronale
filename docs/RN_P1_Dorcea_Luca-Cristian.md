@@ -56,7 +56,7 @@
 
 Rețeaua neuronală se compară cu soluția folosită astăzi pentru aceeași nevoie, adusă într-o formă automată și comparabilă.
 
-**4.1. Cum se rezolvă problema astăzi.** Eu sortez piesele manual, pe o masă, identificându-le vizual, după ochi. [Cât durează și ce greșeli apar.]
+**4.1. Cum se rezolvă problema astăzi.** Eu sortez piesele manual, pe o masă, identificându-le vizual, după ochi.
 
 **4.2. Limita soluției actuale.** Ipoteză: regulile simple de formă și dimensiune funcționează când piesele sunt clar separate și au dimensiuni bine distanțate. Ele devin nesigure când piesele se ating, au reflexii puternice, sunt așezate pe o parte sau au dimensiuni apropiate (de exemplu M4 față de M5). O rețea neuronală convoluțională ar putea învăța din exemple trăsături de aspect (forma capului, filetul, reflexiile) care sunt greu de exprimat prin praguri fixe.
 
@@ -85,7 +85,7 @@ Volumul inițial estimat, pentru aproximativ 6 clase:
 - 30–50 de fotografii de test (500–800 de piese);
 - aproximativ 1,5–2 ore pentru fotografiile de antrenare și 1–2 ore pentru etichetarea manuală a setului de test.
 
-Estimarea se bazează pe ordinele de mărime folosite uzual pentru antrenarea de la zero a unei rețele convoluționale mici; prima antrenare va arăta dacă sunt necesare mai multe date. Piesele disponibile: [tipurile, dimensiunile și numărul aproximativ de piese din fiecare clasă].
+Estimarea se bazează pe ordinele de mărime folosite uzual pentru antrenarea de la zero a unei rețele convoluționale mici; prima antrenare va arăta dacă sunt necesare mai multe date.
 
 **5.4. Alternativa.** Dacă distingerea dimensiunilor apropiate nu se poate face sigur, scopul minim se păstrează prin restrângerea claselor la tipuri (șurub, piuliță, șaibă), cu dimensiunea estimată din măsurătoarea în mm. Dacă numărul de piese dintr-o clasă este prea mic, clasa respectivă se elimină sau se combină cu una apropiată.
 
