@@ -3,7 +3,8 @@
 Programul:
 1. citește `data/pilot/manifest.csv` și verifică coloanele și fișierele;
 2. deschide fiecare fotografie și găsește piesele prin prelucrare clasică
-   (tonuri de gri, prag Otsu, operații morfologice, contururi, dreptunghiul minim rotit);
+   (prag Otsu pe tonuri de gri sau pe saturație ori, pe hârtie milimetrică, prag pe diferența
+   față de fundalul local; operații morfologice, contururi, dreptunghiul minim rotit);
 3. rotește fiecare piesă cu axa lungă orizontală și o pune, fără redimensionare,
    pe un decupaj de dimensiune fixă;
 4. afișează forma datelor care ajung la model (X, F, y) și problemele găsite;
@@ -16,8 +17,10 @@ Fotografiile de antrenare conțin o singură clasă, deci fiecare decupaj prime�
 `raspuns_corect` din rândul fotografiei. Pentru fotografiile amestecate sau fără
 răspuns, eticheta decupajelor rămâne „lipsă”.
 
-În repository sunt doar câteva fotografii (data/pilot/); restul lotului se păstrează local,
-de exemplu în data/raw/pilot/ (ignorat de git), și se indică cu --originale.
+În repository sunt doar câteva fotografii (data/pilot/), în JPG fără metadate: originalele HEIC
+de la telefon conțin coordonatele GPS. Restul lotului se păstrează local, de exemplu în
+data/raw/pilot/ (ignorat de git), și se indică cu --originale; acolo pot fi și originalele HEIC
+cu același nume (fișierul se caută și după nume, cu altă extensie).
 
 Rulare (din rădăcina repository-ului):
     python src/data/citire_pilot.py --canal hartie --scara-imagine 0.25
@@ -45,6 +48,19 @@ def citeste_manifest(cale):
         if lipsa:
             sys.exit(f"Manifestul nu are coloanele: {', '.join(lipsa)}")
         return list(cititor)
+
+
+def gaseste_fisier(nume, foldere):
+    # întâi numele exact; apoi același nume cu altă extensie (de exemplu originalul .heic păstrat local)
+    for d in foldere:
+        if (d / nume).exists():
+            return d / nume
+    for d in foldere:
+        for ext in (".heic", ".heif", ".jpg", ".jpeg", ".png"):
+            cale = d / (Path(nume).stem + ext)
+            if cale.exists():
+                return cale
+    return None
 
 
 def citeste_imagine(cale):
@@ -231,7 +247,7 @@ def main():
     probleme, lipsa = [], []
     X, F, y, id_uri = [], [], [], []
     for r in randuri:
-        cale = next((d / r["fisier"] for d in [pilot, *map(Path, a.originale)] if (d / r["fisier"]).exists()), None)
+        cale = gaseste_fisier(r["fisier"], [pilot, *map(Path, a.originale)])
         if cale is None:
             lipsa.append(r["id_exemplu"])
             continue
