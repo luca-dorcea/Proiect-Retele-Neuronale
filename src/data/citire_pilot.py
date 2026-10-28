@@ -41,17 +41,30 @@ def citeste_manifest(cale):
 
 
 def citeste_imagine(cale):
+    if cale.suffix.lower() in (".heic", ".heif"):
+        # OpenCV nu citește HEIC (formatul implicit al telefonului); se folosește pillow-heif
+        from PIL import Image, ImageOps
+        import pillow_heif
+
+        pillow_heif.register_heif_opener()
+        with Image.open(cale) as im:
+            rgb = np.array(ImageOps.exif_transpose(im).convert("RGB"))
+        return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
     # np.fromfile + imdecode merge și cu căi cu diacritice pe Windows
     date = np.fromfile(str(cale), dtype=np.uint8)
     return cv2.imdecode(date, cv2.IMREAD_COLOR) if date.size else None
 
 
-def gaseste_piese(imagine, arie_minima):
+def gaseste_piese(imagine, arie_minima, canal="gri"):
     """Întoarce, pentru fiecare piesă, conturul exterior, dreptunghiul rotit și numărul de găuri."""
-    gri = cv2.cvtColor(imagine, cv2.COLOR_BGR2GRAY)
-    gri = cv2.GaussianBlur(gri, (5, 5), 0)
-    # fundal închis, piese metalice mai deschise
-    _, masca = cv2.threshold(gri, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    if canal == "saturatie":
+        # fundal deschis de lemn: oțelul zincat are saturația mai mare decât lemnul
+        plan = cv2.cvtColor(imagine, cv2.COLOR_BGR2HSV)[:, :, 1]
+    else:
+        # fundal închis, piese metalice mai deschise
+        plan = cv2.cvtColor(imagine, cv2.COLOR_BGR2GRAY)
+    plan = cv2.GaussianBlur(plan, (5, 5), 0)
+    _, masca = cv2.threshold(plan, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     nucleu = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     masca = cv2.morphologyEx(masca, cv2.MORPH_OPEN, nucleu)
     masca = cv2.morphologyEx(masca, cv2.MORPH_CLOSE, nucleu)
@@ -123,6 +136,10 @@ def main():
     p.add_argument("--pilot", default="data/pilot", help="folderul cu manifest.csv și fotografii")
     p.add_argument("--mm-per-px", type=float, default=None, help="factorul de scară de la calibrarea cu rigla")
     p.add_argument("--latura", type=int, default=256, help="latura decupajului fix, în pixeli")
+    p.add_argument("--canal", choices=["gri", "saturatie"], default="gri",
+                   help="gri: fundal închis (postul fix); saturatie: fundal deschis de lemn")
+    p.add_argument("--scara-imagine", type=float, default=1.0,
+                   help="micșorează toate fotografiile cu același factor înainte de prelucrare")
     p.add_argument("--arie-minima", type=float, default=0.0005, help="aria minimă a unei piese, ca fracție din fotografie")
     p.add_argument("--iesire", default=None, help="folderul pentru imaginile de inspecție (implicit <pilot>/inspectie)")
     a = p.parse_args()
@@ -149,8 +166,10 @@ def main():
         if imagine is None:
             probleme.append(f"{r['id_exemplu']}: fișierul {r['fisier']} nu se poate citi ca imagine")
             continue
+        if a.scara_imagine != 1.0:
+            imagine = cv2.resize(imagine, None, fx=a.scara_imagine, fy=a.scara_imagine, interpolation=cv2.INTER_AREA)
         arie_minima = a.arie_minima * imagine.shape[0] * imagine.shape[1]
-        piese, _ = gaseste_piese(imagine, arie_minima)
+        piese, _ = gaseste_piese(imagine, arie_minima, a.canal)
         eticheta = r["raspuns_corect"].strip()
         if eticheta.lower() in FARA_RASPUNS:
             eticheta = "lipsă"
@@ -167,7 +186,9 @@ def main():
             cv2.putText(desen, str(k), tuple(cutie[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
             id_piesa = f"{r['id_exemplu']}_{k:02d}"
             if atinge_marginea(piesa["contur"], imagine.shape):
-                probleme.append(f"{id_piesa}: piesa atinge marginea fotografiei")
+                # o piesă tăiată de margine nu se poate măsura întreagă
+                probleme.append(f"{id_piesa}: obiect tăiat de marginea fotografiei, ignorat")
+                continue
             decupaj = decupeaza(imagine, piesa["dreptunghi"], a.latura)
             if decupaj is None:
                 probleme.append(f"{id_piesa}: piesa ({max(w, h):.0f}×{min(w, h):.0f} px) nu încape în {a.latura}×{a.latura}")
