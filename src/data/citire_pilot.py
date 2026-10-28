@@ -9,12 +9,19 @@ Programul:
 4. afișează forma datelor care ajung la model (X, F, y) și problemele găsite;
 5. salvează imagini de inspecție (contururile pe fotografie și o planșă cu decupaje).
 
+Coloana opțională `numar_piese` din manifest (câte piese a pus autorul în fotografie) se compară
+cu numărul de obiecte găsite, ca să se vadă detecțiile false sau ratate.
+
 Fotografiile de antrenare conțin o singură clasă, deci fiecare decupaj primește
 `raspuns_corect` din rândul fotografiei. Pentru fotografiile amestecate sau fără
 răspuns, eticheta decupajelor rămâne „lipsă”.
 
+În repository sunt doar câteva fotografii (data/pilot/); restul lotului se păstrează local,
+de exemplu în data/raw/pilot/ (ignorat de git), și se indică cu --originale.
+
 Rulare (din rădăcina repository-ului):
-    python src/data/citire_pilot.py
+    python src/data/citire_pilot.py --canal hartie --scara-imagine 0.25
+    python src/data/citire_pilot.py --canal hartie --scara-imagine 0.25 --originale data/raw/pilot
     python src/data/citire_pilot.py --mm-per-px 0.12 --latura 256
 """
 
@@ -206,6 +213,8 @@ def main():
     p.add_argument("--scara-imagine", type=float, default=1.0,
                    help="micșorează toate fotografiile cu același factor înainte de prelucrare")
     p.add_argument("--arie-minima", type=float, default=0.0005, help="aria minimă a unei piese, ca fracție din fotografie")
+    p.add_argument("--originale", nargs="*", default=[],
+                   help="foldere locale în care se caută fotografiile care nu sunt în repository")
     p.add_argument("--iesire", default=None, help="folderul pentru imaginile de inspecție (implicit <pilot>/inspectie)")
     a = p.parse_args()
 
@@ -219,12 +228,12 @@ def main():
     print("  pe grup:", dict(Counter(r["grup"] for r in randuri)))
     print("  pe răspuns corect:", dict(Counter(r["raspuns_corect"] for r in randuri)))
 
-    probleme = []
+    probleme, lipsa = [], []
     X, F, y, id_uri = [], [], [], []
     for r in randuri:
-        cale = pilot / r["fisier"]
-        if not cale.exists():
-            probleme.append(f"{r['id_exemplu']}: lipsește fișierul {r['fisier']}")
+        cale = next((d / r["fisier"] for d in [pilot, *map(Path, a.originale)] if (d / r["fisier"]).exists()), None)
+        if cale is None:
+            lipsa.append(r["id_exemplu"])
             continue
         imagine = citeste_imagine(cale)
         if imagine is None:
@@ -268,6 +277,7 @@ def main():
         if not piese:
             probleme.append(f"{r['id_exemplu']}: nicio piesă găsită (prag sau fundal nepotrivit?)")
 
+        taiate = 0
         desen = imagine.copy()
         if zona is not None:
             contur_zona, _ = cv2.findContours(zona, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -280,7 +290,7 @@ def main():
             if atinge_marginea(piesa["contur"], imagine.shape, zona):
                 # o piesă tăiată de margine nu se poate măsura întreagă
                 cv2.drawContours(desen, [cutie], 0, (0, 0, 255), 1)
-                probleme.append(f"{id_piesa}: obiect tăiat de marginea {'zonei de lucru' if zona is not None else 'fotografiei'}, ignorat")
+                taiate += 1
                 continue
             cv2.drawContours(desen, [cutie], 0, (0, 255, 0), 2)
             cv2.putText(desen, str(k), tuple(cutie[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
@@ -293,6 +303,13 @@ def main():
             F.append([lungime, latime])
             y.append(eticheta)
             id_uri.append(id_piesa)
+        if taiate:
+            loc = "zonei de lucru" if zona is not None else "fotografiei"
+            probleme.append(f"{r['id_exemplu']}: {taiate} obiecte tăiate de marginea {loc} ignorate")
+        pastrate = sum(1 for i in id_uri if i.startswith(r["id_exemplu"] + "_"))
+        asteptate = (r.get("numar_piese") or "").strip()
+        if asteptate.isdigit() and int(asteptate) != pastrate:
+            probleme.append(f"{r['id_exemplu']}: {pastrate} obiecte păstrate, dar în fotografie sunt {asteptate} piese")
         cv2.imwrite(str(iesire / f"{r['id_exemplu']}_contururi.jpg"), desen)
 
     X = np.array(X, dtype=np.uint8).reshape(-1, a.latura, a.latura, 3)
@@ -308,6 +325,8 @@ def main():
     plansa(list(X), [f"{i}\n{e}" for i, e in zip(id_uri, y)], iesire / "decupaje.png")
     print(f"Imaginile de inspecție sunt în {iesire}/")
 
+    if lipsa:
+        print(f"{len(lipsa)} fotografii din manifest nu au fost găsite (nu sunt în repository; indicați folderul cu --originale).")
     print()
     if probleme:
         print(f"Probleme găsite ({len(probleme)}):")
