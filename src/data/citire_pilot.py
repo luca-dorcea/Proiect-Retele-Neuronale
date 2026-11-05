@@ -11,7 +11,12 @@ Programul:
 5. salvează imagini de inspecție (contururile pe fotografie și o planșă cu decupaje).
 
 Coloana opțională `numar_piese` din manifest (câte piese a pus autorul în fotografie) se compară
-cu numărul de obiecte găsite, ca să se vadă detecțiile false sau ratate.
+cu numărul de obiecte găsite, ca să se vadă detecțiile false sau ratate. Obiectele false se elimină:
+- obiectele mai înguste de --latime-minima-mm (implicit 5 mm), de exemplu gradațiile riglei;
+- dacă rămân mai multe obiecte decât `numar_piese`, se păstrează doar cele mai mari `numar_piese`
+  obiecte (după arie), iar celelalte se raportează ca eliminate.
+Coloana opțională `folosit` (da/nu) scoate din date o fotografie întreagă în care piesa nu se vede
+(de exemplu acoperită de mână); motivul se scrie în `observatii`.
 
 Fotografiile de antrenare conțin o singură clasă, deci fiecare decupaj primește
 `raspuns_corect` din rândul fotografiei. Pentru fotografiile amestecate sau fără
@@ -222,7 +227,7 @@ def main():
     p.add_argument("--canal", choices=["gri", "saturatie", "hartie"], default="gri",
                    help="gri: fundal închis (postul fix); saturatie: fundal deschis de lemn; "
                         "hartie: hârtie milimetrică, cu scara calculată din caroiaj pentru fiecare fotografie")
-    p.add_argument("--latime-minima-mm", type=float, default=2.0,
+    p.add_argument("--latime-minima-mm", type=float, default=5.0,
                    help="obiectele mai înguste sunt ignorate (de exemplu gradațiile riglei); doar când scara e cunoscută")
     p.add_argument("--alungire-maxima", type=float, default=15.0,
                    help="obiectele cu lungime/lățime mai mare sunt ignorate, ca linii subțiri")
@@ -247,6 +252,9 @@ def main():
     probleme, lipsa = [], []
     X, F, y, id_uri = [], [], [], []
     for r in randuri:
+        if (r.get("folosit") or "").strip().lower() == "nu":
+            probleme.append(f"{r['id_exemplu']}: fotografie scoasă din date (folosit = nu): {r['observatii']}")
+            continue
         cale = gaseste_fisier(r["fisier"], [pilot, *map(Path, a.originale)])
         if cale is None:
             lipsa.append(r["id_exemplu"])
@@ -285,6 +293,16 @@ def main():
         piese = [pi for pi in piese if not linie(pi)]
         if linii:
             probleme.append(f"{r['id_exemplu']}: {len(linii)} linii subțiri ignorate")
+        asteptate = (r.get("numar_piese") or "").strip()
+        if asteptate.isdigit():
+            intregi = [pi for pi in piese if not atinge_marginea(pi["contur"], imagine.shape, zona)]
+            if len(intregi) > int(asteptate):
+                # obiecte false: se păstrează cele mai mari `numar_piese` obiecte
+                intregi.sort(key=lambda pi: cv2.contourArea(pi["contur"]), reverse=True)
+                eliminate = intregi[int(asteptate):]
+                piese = [pi for pi in piese if not any(pi is e for e in eliminate)]
+                probleme.append(f"{r['id_exemplu']}: {len(eliminate)} obiecte false eliminate "
+                                f"(în fotografie sunt {asteptate} piese)")
         eticheta = r["raspuns_corect"].strip()
         if eticheta.lower() in FARA_RASPUNS:
             eticheta = "lipsă"
@@ -323,7 +341,6 @@ def main():
             loc = "zonei de lucru" if zona is not None else "fotografiei"
             probleme.append(f"{r['id_exemplu']}: {taiate} obiecte tăiate de marginea {loc} ignorate")
         pastrate = sum(1 for i in id_uri if i.startswith(r["id_exemplu"] + "_"))
-        asteptate = (r.get("numar_piese") or "").strip()
         if asteptate.isdigit() and int(asteptate) != pastrate:
             probleme.append(f"{r['id_exemplu']}: {pastrate} obiecte păstrate, dar în fotografie sunt {asteptate} piese")
         cv2.imwrite(str(iesire / f"{r['id_exemplu']}_contururi.jpg"), desen)
